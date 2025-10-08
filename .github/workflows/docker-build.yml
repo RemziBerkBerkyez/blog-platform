@@ -1,0 +1,66 @@
+name: Docker Build and Push
+
+# Workflow ne zaman çalışacak?
+on:
+  push:
+    branches: [ main ]  # main branch'e push olunca
+  pull_request:
+    branches: [ main ]  # Pull request açılınca
+
+# Environment variables (tüm job'larda kullanılabilir)
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_NAME_API: blog-platform-api
+  IMAGE_NAME_NGINX: blog-platform-nginx
+
+jobs:
+  build:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest  # GitHub'ın Ubuntu sunucusunda çalışacak
+    
+    steps:
+      # Adım 1: Kodu indir (checkout)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # Adım 2: Docker Buildx kurulumu (multi-platform build için)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      # Adım 3: DockerHub'a login
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+      # Adım 4: API image'ini build et
+      - name: Build API Docker Image
+        run: |
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:latest ./api
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }} ./api
+        
+      # Adım 5: Nginx image'ini build et
+      - name: Build Nginx Docker Image
+        run: |
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_NGINX }}:latest ./nginx
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_NGINX }}:${{ github.sha }} ./nginx
+        
+      # Adım 6: API image'ini DockerHub'a push et
+      - name: Push API Image to DockerHub
+        run: |
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:latest
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }}
+        
+      # Adım 7: Nginx image'ini DockerHub'a push et
+      - name: Push Nginx Image to DockerHub
+        run: |
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_NGINX }}:latest
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_NGINX }}:${{ github.sha }}
+        
+      # Adım 8: Build sonuçlarını göster
+      - name: Image digest
+        run: |
+          echo "API Image: ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:latest"
+          echo "Nginx Image: ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_NGINX }}:latest"
+          echo "Commit SHA: ${{ github.sha }}"
