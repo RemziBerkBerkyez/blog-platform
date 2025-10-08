@@ -1,0 +1,72 @@
+# ==========================================
+# .dockerignore
+# Build context'e dahil edilmeyen dosyalar
+# ==========================================
+
+# Dependencies (Dockerfile'da npm install yapacağız)
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+#package-lock.json
+
+# Environment variables (secrets image'a gömülmesin)
+.env
+.env.*
+.env.local
+.env.production
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+__tests__
+*.test.js
+*.spec.js
+
+# Build artifacts
+dist
+build
+.cache
+
+# Documentation
+*.md
+README.md
+docs/
+CHANGELOG.md
+
+# Docker files (image içinde gereksiz)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# CI/CD
+.gitlab-ci.yml
+.github/
+.circleci/

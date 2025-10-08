@@ -1,0 +1,71 @@
+// ==========================================
+// POST MODEL (MongoDB Schema)
+// ==========================================
+
+// mongoose kütüphanesini import et
+// mongoose: MongoDB ile JavaScript arasında köprü
+const mongoose = require('mongoose');
+
+// ==========================================
+// SCHEMA TANIMI
+// ==========================================
+
+// Schema = Veri yapısı tanımı (Excel'deki sütunlar gibi)
+const postSchema = new mongoose.Schema({
+  
+  // BAŞLIK alanı
+  title: {
+    type: String,              // Veri tipi: Metin (string)
+    required: true,            // Zorunlu alan (boş olamaz)
+    trim: true,                // Başındaki/sonundaki boşlukları temizle
+    minlength: 3,              // En az 3 karakter
+    maxlength: 200             // En fazla 200 karakter
+  },
+  
+  // İÇERİK alanı
+  content: {
+    type: String,              // Veri tipi: Metin
+    required: true,            // Zorunlu alan
+    minlength: 10              // En az 10 karakter (çok kısa blog olmasın)
+  },
+  
+  // YAZAR alanı
+  author: {
+    type: String,              // Veri tipi: Metin
+    default: 'Anonymous',      // Varsayılan değer (yazılmazsa "Anonymous" olur)
+    trim: true
+  },
+  
+  // TAGS (Etiketler) alanı
+  tags: {
+    type: [String],            // Veri tipi: String array (liste)
+    default: []                // Varsayılan: Boş liste
+  },
+  
+  // YAYINLANMIŞ MI?
+  published: {
+    type: Boolean,             // Veri tipi: true/false
+    default: true              // Varsayılan: true (yayınlanmış)
+  }
+  
+}, {
+  // ==========================================
+  // SCHEMA OPSİYONLARI
+  // ==========================================
+  
+  timestamps: true             // createdAt ve updatedAt otomatik ekle
+  // createdAt: Post ne zaman oluşturuldu?
+  // updatedAt: Post en son ne zaman güncellendi?
+});
+
+// ==========================================
+// MODEL OLUŞTUR
+// ==========================================
+
+// Model oluştur ve export et
+// 'Post': Model adı (MongoDB'de 'posts' collection'ı olacak)
+// postSchema: Yukarıda tanımladığımız yapı
+module.exports = mongoose.model('Post', postSchema);
+
+// NOT: mongoose otomatik olarak 'Post' → 'posts' dönüştürür
+// Collection name: posts (küçük harf, çoğul)

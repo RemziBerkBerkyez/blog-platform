@@ -1,0 +1,84 @@
+# ===========================================
+# DOCKER PROJECT - .gitignore
+# ===========================================
+
+# ============= GİZLİ BİLGİLER (ÇOK ÖNEMLİ!) =============
+.env
+.env.local
+.env.production
+.env.*.local
+
+# ============= NODE.JS =============
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ============= LOGS =============
+logs/
+*.log
+api/logs/*
+!api/logs/.gitkeep
+
+# ============= DOCKER =============
+# Override dosyaları (kişisel ayarlar)
+docker-compose.override.yml
+
+# ============= DATABASE (Volume Data) =============
+# Bu dosyalar container içinde kalmalı!
+data/
+mongodb-data/
+backup/
+*.sql
+*.dump
+
+# ============= İŞLETİM SİSTEMİ =============
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# ============= IDE / EDITOR =============
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (WebStorm, IntelliJ)
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+
+# ============= TEST & COVERAGE =============
+coverage/
+.nyc_output/
+test-results/
+
+# ============= BUILD OUTPUT =============
+dist/
+build/
+*.tgz
+
+# ============= TEMPORARY =============
+*.tmp
+temp/
+tmp/
+
+# ============= SECRETS (GÜVENLİK!) =============
+secrets/
+*.key
+*.pem
+*.cert
+credentials.json
+config/secrets.yml

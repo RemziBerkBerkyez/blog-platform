@@ -1,0 +1,97 @@
+# ==========================================
+# DOCKER COMPOSE - Development Environment
+# ==========================================
+
+services:
+  # ==========================================
+  # API SERVICE (Backend)
+  # ==========================================
+  api:
+    build:
+      context: ./api                        # Build context (Dockerfile'ın bulunduğu yer)
+      dockerfile: Dockerfile                # Hangi Dockerfile
+    container_name: blog-api                # Container ismi (unique)
+    restart: unless-stopped                 # Restart policy (crash olursa restart et)
+    ports:
+      - "3000:3000"                         # Host:Container port mapping
+    environment:
+      - NODE_ENV=development                # Environment değişkenleri
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/blogdb  # MongoDB bağlantısı (service name)
+    depends_on:
+      - mongodb                             # mongodb başladıktan sonra api başlasın
+    networks:
+      - blog-network                        # Custom network'e bağla
+    volumes:
+      - ./api/src:/app/src                  # Hot reload için (development)
+      - ./api/package.json:/app/package.json
+      - api-logs:/var/log/app               # Logs volume
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]  # Health check komutu
+      interval: 30s                         # Her 30 saniyede
+      timeout: 3s                           # 3 saniye timeout
+      retries: 3                            # 3 kez dene
+      start_period: 10s                     # İlk 10 saniye bekle
+
+  # ==========================================
+  # MONGODB SERVICE (Database)
+  # ==========================================
+  mongodb:
+    image: mongo:7                   # Official MongoDB image (Alpine - küçük)
+    container_name: blog-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"                       # MongoDB default port
+    environment:
+      - MONGO_INITDB_DATABASE=blogdb       # İlk database adı
+    networks:
+      - blog-network
+    volumes:
+      - mongodb-data:/data/db               # MongoDB data persistence (named volume)
+      - mongodb-config:/data/configdb       # MongoDB config persistence
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]  # MongoDB ping
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ==========================================
+  # NGINX SERVICE (Reverse Proxy)
+  # ==========================================
+  nginx:
+    image: nginx:alpine                     # Official Nginx image (Alpine)
+    container_name: blog-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"                             # HTTP port
+    depends_on:
+      - api                                 # API başladıktan sonra nginx başlasın
+    networks:
+      - blog-network
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Nginx config (read-only)
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+# ==========================================
+# VOLUMES (Veri Kalıcılığı)
+# ==========================================
+volumes:
+  mongodb-data:                             # MongoDB data (named volume)
+    driver: local                           # Local disk driver
+  mongodb-config:                           # MongoDB config
+    driver: local
+  api-logs:                                 # API logs
+    driver: local
+
+# ==========================================
+# NETWORKS (İzolasyon)
+# ==========================================
+networks:
+  blog-network:                             # Custom bridge network
+    driver: bridge                          # Bridge driver (default)
+    name: blog-network                      # Network adı
